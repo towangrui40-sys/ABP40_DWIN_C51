@@ -1,0 +1,369 @@
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TASK_MANAGER
+OBJECT MODULE PLACED IN ..\OBJ\Task_manager.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Task_manager.c LARGE OMF2 OPTIMIZE(3,SIZE) BROWSE INCDIR(..\USER;..\FUNC
+                    -_HANDLER;..\GUI_APP;..\HANDWARE\NOR_FLASH;..\HANDWARE\USART;..\T5LDriver) DEBUG PRINT(..\OBJ\Task_manager.lst) TABS(2) O
+                    -BJECT(..\OBJ\Task_manager.obj)
+
+line level    source
+
+   1          //############################################################
+   2          // FILE:  Task_manager.c
+   3          // Created on: 2022��2��20��
+   4          // Author: Jason
+   5          // summary: Task_manager
+   6          //############################################################
+   7          #include "main.h"
+   8          
+   9          
+  10          #define Task_Num   4   //task +1
+  11          #define HFPeriod_COUNT     1    //1ms
+  12          #define RTUPeriod_COUNT    50    //50ms
+  13          #define FSMPeriod_COUNT    10   //5ms
+  14          #define TIMERPeriod_COUNT  250   //250ms
+  15          
+  16          TaskTime xdata TasksPare[Task_Num];
+  17          extern code const Product_TypeDef product_data[PRODUCT_TOTAL];
+  18          void Timer_Task_Count(void)
+  19          {
+  20   1        u8 data Task_Count=0;
+  21   1       for(Task_Count=0;Task_Count<Task_Num;Task_Count++)    //TASK_NUM=5
+  22   1       {
+  23   2        if((TasksPare[Task_Count].Task_Count<TasksPare[Task_Count].Task_Period)&&(TasksPare[Task_Count].Task_Per
+             -iod>0))
+  24   2        {
+  25   3          TasksPare[Task_Count].Task_Count++; 
+  26   3        }
+  27   2       }
+  28   1      }
+  29          
+  30          void Execute_Task_List_RUN(void)
+  31          {
+  32   1        u8 data Task_Count = 0;
+  33   1       for(Task_Count=0;Task_Count < Task_Num;Task_Count++)
+  34   1       {
+  35   2        if((TasksPare[Task_Count].Task_Count>=TasksPare[Task_Count].Task_Period)&&(TasksPare[Task_Count].Task_Pe
+             -riod > 0))
+  36   2        {
+  37   3          TasksPare[Task_Count].Task_Function();
+  38   3          TasksPare[Task_Count].Task_Count=0;
+  39   3        }
+  40   2       }
+  41   1      }
+  42          #define SPK_TIME_OUT_TIMES 5
+  43          void Task_Timer_Sec(void)  //  250ms
+  44          {
+  45   1        static u16 xdata tick = 0;  //1s
+  46   1        if((win_str_data.state == FSM_RUN) || (win_str_data.state == FSM_END))
+  47   1        {
+  48   2          tick++;
+  49   2          if(tick >= 4)    // 250ms each tick, 4 ticks = 1s
+  50   2          {
+  51   3            tick = 0;
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 2   
+
+  52   3            switch(win_str_data.state)
+  53   3            {
+  54   4              case FSM_RUN: /**********FSM_RUN***********/
+  55   4                win_str_data.used_time++;  //运行时间增加
+  56   4                win_str_data.disp_hold_time_countdown--;
+  57   4                win_str_data.load_bar_tick++;
+  58   4                win_str_data.press_load_bar_num = (win_str_data.load_bar * win_str_data.load_bar_tick)/100;
+  59   4                sys_write_vp(ICON_TABLETTING_LOAD_BAR_ADDR,(u8 *)&win_str_data.press_load_bar_num,1);
+  60   4                break;
+  61   4      
+  62   4              case FSM_END: //ȡƬ
+  63   4                win_str_data.pressure_relief_time_minus++;
+  64   4                win_str_data.press_load_bar_num = (win_str_data.load_bar * win_str_data.pressure_relief_time_minus)/1
+             -00;
+  65   4                sys_write_vp(ICON_UP_LOAD_BAR_ADDR,(u8 *)&win_str_data.press_load_bar_num,1);
+  66   4                sys_write_vp(ARTNUM_RETURN_TIME_TICK_ADDR,(u8 *)&win_str_data.pressure_relief_time_minus,2);
+  67   4                if(win_str_data.speaker_delay >= 0) win_str_data.speaker_delay --;
+  68   4                if(win_str_data.speaker_delay == 1)
+  69   4                {
+  70   5                  RTU_Cmd_Pending(RTU_DC3_STOP,OFF);  //��������
+  71   5                }
+  72   4                break;
+  73   4      
+  74   4              default:
+  75   4                break;
+  76   4            }
+  77   3          }
+  78   2        }
+  79   1        
+  80   1        if(win_str_data.sys_delay > 0) win_str_data.sys_delay--;
+  81   1      }
+  82          void RTU_send_Rece(void)  // 100ms�������ڣ��������޸����ڣ���
+             -�1ms
+  83          {
+  84   1        RTU_Send_Task_Handler();
+  85   1      }
+  86          
+  87          /*********************状态机******************************/
+  88          void Run_FSM(void)   //FSM状态机 
+  89          {
+  90   1        static u16 xdata temp = 0;  //1s计时
+  91   1        switch(win_str_data.state)
+  92   1        {
+  93   2          case FSM_INIT:    //***************状态机：状态机初始化
+  94   2            win_str_data.state = FSM_READY;
+  95   2            RTU_Cmd_Pending(RTU_DC2_ON,ON); //  上升电磁阀开
+  96   2            RTU_Cmd_Pending(RTU_AC1_ON,ON); //  灯
+  97   2            win_str_data.sys_delay = 4*25;  //25s系统延时，默认开机液压缸回升
+  98   2            break;
+  99   2          case FSM_READY:
+ 100   2              win_str_data.disp_step = 1;
+ 101   2              win_str_data.disp_pressure = win_str_data.use_pressure;
+ 102   2              win_str_data.disp_hold_time = win_str_data.use_hold_time;
+ 103   2              win_str_data.disp_hold_time_countdown = win_str_data.use_hold_time;
+ 104   2          
+ 105   2              if(win_str_data.start == 1)    //接收到Start_win  start=1开始信号
+ 106   2              {
+ 107   3                if(str_sys.motor_sensor1 == 1)    //关到位
+ 108   3                {
+ 109   4                  win_str_data.state = FSM_CLOSE;
+ 110   4                }
+ 111   3                else
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 3   
+
+ 112   3                {
+ 113   4                  RTU_Cmd_Pending(RTU_MOTOR_FLAG,1);  //  关闭
+ 114   4                  win_str_data.state = FSM_CLOSE;
+ 115   4                }
+ 116   3      
+ 117   3              }
+ 118   2              if(win_str_data.sys_delay == 1)
+ 119   2              {
+ 120   3                RTU_Cmd_Pending(RTU_DC2_OFF,OFF); //  上升电磁阀关
+ 121   3              }
+ 122   2            break;
+ 123   2          case FSM_CLOSE:
+ 124   2            if(str_sys.motor_sensor1 == 1)    //关到位
+ 125   2            {
+ 126   3              win_str_data.state = FSM_START;
+ 127   3            }
+ 128   2            break;
+ 129   2      
+ 130   2          case FSM_START:/*******************************************状态机：开始状态*********************
+             -***********/
+ 131   2              RTU_Cmd_Pending(RTU_DC2_OFF,OFF); //  上升电磁阀关
+ 132   2              RTU_Cmd_Pending(RTU_DC1_ON,ON); //  UP 液压机下压  第一个继电器
+ 133   2              RTU_Cmd_Pending(RTU_AC_EX_ON,ON); //  UP 液压机下压  第一个继电器
+ 134   2              win_str_data.state = FSM_PUSH;   //切换到运行状态 update fsm
+ 135   2            break;
+ 136   2      
+ 137   2          case FSM_PUSH:/*******************************************状态机：开始状态**********************
+             -**********/
+ 138   2              if(win_str_data.real_pressure >= (win_str_data.use_pressure))
+ 139   2              {
+ 140   3                RTU_Cmd_Pending(RTU_AC_EX_OFF,OFF); //  UP 液压机下压  第一个继电器
+ 141   3                win_str_data.load_bar_num = win_str_data.prog_step1_hold_time + win_str_data.prog_step2_hold_time + w
+             -in_str_data.prog_step3_hold_time;
+ 142   3                win_str_data.load_bar = 10000/win_str_data.load_bar_num;
+ 143   3                win_str_data.state = FSM_RUN;   //切换到运行状态 update fsm
+ 144   3              }
+ 145   2              if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
+ 146   2              {
+ 147   3                win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
+ 148   3                win_str_data.state = FSM_STOP;
+ 149   3              }
+ 150   2              break;
+ 151   2      
+ 152   2          case FSM_RUN:
+ 153   2            if(win_str_data.disp_step == 1)
+ 154   2            {
+ 155   3              if(win_str_data.disp_hold_time_countdown == 0)
+ 156   3              {
+ 157   4                memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step2_pressure,4);  //运行值=设�
+             -��值
+ 158   4                
+ 159   4                win_str_data.disp_step = 2;
+ 160   4                win_str_data.disp_pressure = win_str_data.use_pressure;
+ 161   4                win_str_data.disp_hold_time = win_str_data.use_hold_time;
+ 162   4                win_str_data.disp_hold_time_countdown = win_str_data.use_hold_time;
+ 163   4                win_str_data.state = FSM_START;
+ 164   4              }
+ 165   3            }
+ 166   2            if(win_str_data.disp_step == 2)
+ 167   2            {
+ 168   3              if(win_str_data.disp_hold_time_countdown == 0)
+ 169   3              {
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 4   
+
+ 170   4                memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step3_pressure,4);  //运行值=设�
+             -��值
+ 171   4                
+ 172   4                win_str_data.disp_step = 3;
+ 173   4                win_str_data.disp_pressure = win_str_data.use_pressure;
+ 174   4                win_str_data.disp_hold_time = win_str_data.use_hold_time;
+ 175   4                win_str_data.disp_hold_time_countdown = win_str_data.use_hold_time;
+ 176   4                win_str_data.state = FSM_START;
+ 177   4              }
+ 178   3            }
+ 179   2            
+ 180   2            if(win_str_data.disp_step == 3)
+ 181   2            {
+ 182   3              if(win_str_data.disp_hold_time_countdown == 0)
+ 183   3              {
+ 184   4                win_str_data.start = 0;
+ 185   4                if(win_str_data.alarm == 0)
+ 186   4                {
+ 187   5                  win_str_data.speaker_delay = 3;
+ 188   5                  RTU_Cmd_Pending(RTU_DC3_ON,ON); //蜂鸣器开
+ 189   5                }
+ 190   4              }
+ 191   3            }
+ 192   2      
+ 193   2            if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
+ 194   2            {
+ 195   3              win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
+ 196   3              win_str_data.state = FSM_STOP;
+ 197   3            }
+ 198   2            if(win_str_data.use_pressure <= 3)
+ 199   2            {
+ 200   3              if(win_str_data.real_pressure < (win_str_data.use_pressure))
+ 201   3              {
+ 202   4                win_str_data.state = FSM_START;
+ 203   4              }
+ 204   3            }
+ 205   2            else
+ 206   2            {
+ 207   3              if(win_str_data.real_pressure < (win_str_data.use_pressure - 2))
+ 208   3              {
+ 209   4                win_str_data.state = FSM_START;
+ 210   4              }
+ 211   3            }
+ 212   2            break;
+ 213   2      
+ 214   2          case FSM_STOP:
+ 215   2            
+ 216   2              win_str_data.sampling_time_tick = 0;
+ 217   2              win_str_data.press_load_bar_num = 0;
+ 218   2              sys_write_vp(ICON_PICK_UP_LOAD_BAR_ADDR,(u8 *)&win_str_data.sampling_time_tick,1);
+ 219   2              win_str_data.out_start = 0;
+ 220   2          
+ 221   2              win_str_data.load_bar_tick = 0; // 进度条
+ 222   2                win_str_data.press_load_bar_num = 0;
+ 223   2          
+ 224   2              sys_write_vp(ICON_TABLETTING_LOAD_BAR_ADDR,(u8 *)&win_str_data.press_load_bar_num,1);
+ 225   2              memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step1_pressure,4);  //运行值=设�
+             -�值
+ 226   2      
+ 227   2              RTU_Cmd_Pending(RTU_DC1_OFF,OFF); //  液压机液压油泵
+ 228   2              RTU_Cmd_Pending(RTU_AC_EX_OFF,OFF);// 下压电磁阀
+ 229   2              RTU_Cmd_Pending(RTU_DC2_ON,ON); //  上升电磁阀开    
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 5   
+
+ 230   2          
+ 231   2              win_str_data.pressure_relief_time_minus = 0;
+ 232   2          
+ 233   2              win_str_data.load_bar = 10000/win_str_data.pressure_relief_time;
+ 234   2      
+ 235   2              win_str_data.used_time_l = win_str_data.used_time & 0xffff;  //Save used time
+ 236   2              win_str_data.used_time_h = (win_str_data.used_time>>16) & 0xffff; 
+ 237   2              norflash_write(RUNTIME_MIN_HADDR,(u8*)&win_str_data.used_time_h,2);
+ 238   2            
+ 239   2              win_str_data.state = FSM_END;
+ 240   2            break;    
+ 241   2              
+ 242   2          case FSM_END:
+ 243   2              if(win_str_data.pressure_relief_time_minus >= win_str_data.pressure_relief_time)
+ 244   2              {
+ 245   3                RTU_Cmd_Pending(RTU_DC2_OFF,OFF); //  上升电磁阀开    
+ 246   3                RTU_Cmd_Pending(RTU_MOTOR_FLAG,2);  //  关闭
+ 247   3                win_str_data.state = FSM_OPEN;
+ 248   3                if(temp == 0xff) win_change_page(WORK_PAGE);
+ 249   3              }
+ 250   2              else
+ 251   2              {
+ 252   3                if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始�
+             -�号
+ 253   3                {
+ 254   4                  win_change_page(CYLINDER_RETURNING_PAGE);
+ 255   4                  win_str_data.start = 0;
+ 256   4                  win_str_data.out_start = 0;
+ 257   4                  temp = 0xff;
+ 258   4                }
+ 259   3              }
+ 260   2            break;
+ 261   2      
+ 262   2      
+ 263   2          case FSM_OPEN:
+ 264   2            if(str_sys.motor_sensor2 == 1)    //开到位
+ 265   2            {
+ 266   3              win_str_data.state = FSM_READY;
+ 267   3            }
+ 268   2            if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始信�
+             -��
+ 269   2            {
+ 270   3              win_str_data.start = 0;
+ 271   3              win_str_data.out_start = 0;
+ 272   3              temp = 0xff;
+ 273   3            }
+ 274   2          default:
+ 275   2            break;
+ 276   2        }
+ 277   1      }
+ 278          void HFPeriod_1msTask(void)
+ 279          {
+ 280   1        win_str_data.real_pressure = ((str_sys.adc_per-350)/5);   //����ѹ��ֵ bar
+ 281   1        if((int)win_str_data.real_pressure <= 0) win_str_data.real_pressure = 0;
+ 282   1        
+ 283   1        if(win_str_data.real_pressure > win_str_data.use_pressure) 
+ 284   1          win_str_data.disp_real_pressure = win_str_data.use_pressure;
+ 285   1        else
+ 286   1          win_str_data.disp_real_pressure = win_str_data.real_pressure;
+ 287   1          
+ 288   1        sys_write_vp(ARTNUM_MAIN_REAL_PRESSURE_ADDR,(u8 *)&win_str_data.disp_real_pressure,1);
+ 289   1      
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 6   
+
+ 290   1          
+ 291   1        btn_click_handler();//��ť����¼����� 
+ 292   1        rtu_response_handler();
+ 293   1        win_fresh_window();     //ˢ�½���
+ 294   1      }
+ 295          
+ 296          
+ 297          void Task_Manage_List_Init(void)
+ 298          {
+ 299   1        TasksPare[0].Task_Period=HFPeriod_COUNT; //PERIOD_COUNT=1    1ms
+ 300   1        TasksPare[0].Task_Count=1;
+ 301   1        TasksPare[0].Task_Function=HFPeriod_1msTask;  
+ 302   1      
+ 303   1        TasksPare[1].Task_Period=RTUPeriod_COUNT; //2ms
+ 304   1        TasksPare[1].Task_Count=8;
+ 305   1        TasksPare[1].Task_Function=RTU_send_Rece; //  ͨѶ���պͷ���;
+ 306   1      
+ 307   1        TasksPare[2].Task_Period=FSMPeriod_COUNT; //100ms
+ 308   1        TasksPare[2].Task_Count=80;
+ 309   1        TasksPare[2].Task_Function=Run_FSM;//  ͨѶ���պͷ���;
+ 310   1      
+ 311   1        TasksPare[3].Task_Period = TIMERPeriod_COUNT;//500ms
+ 312   1        TasksPare[3].Task_Count=300;
+ 313   1        TasksPare[3].Task_Function = Task_Timer_Sec;   // 500ms��LED����˸
+ 314   1      }
+ 315          
+ 316          
+ 317          // USER CODE END
+ 318          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1988    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     32    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
