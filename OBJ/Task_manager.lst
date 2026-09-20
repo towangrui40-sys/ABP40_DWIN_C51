@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 1   
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TASK_MANAGER
@@ -62,7 +62,7 @@ line level    source
   49   2          if(tick >= 4)    // 250ms each tick, 4 ticks = 1s
   50   2          {
   51   3            tick = 0;
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 2   
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 2   
 
   52   3            switch(win_str_data.state)
   53   3            {
@@ -126,7 +126,7 @@ line level    source
  109   4                  win_str_data.state = FSM_CLOSE;
  110   4                }
  111   3                else
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 3   
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 3   
 
  112   3                {
  113   4                  RTU_Cmd_Pending(RTU_MOTOR_FLAG,1);  //  关闭
@@ -166,7 +166,7 @@ line level    source
  144   3              }
  145   2              if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
  146   2              {
- 147   3                win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
+ 147   3      
  148   3                win_str_data.state = FSM_STOP;
  149   3              }
  150   2              break;
@@ -190,7 +190,7 @@ line level    source
  167   2            {
  168   3              if(win_str_data.disp_hold_time_countdown == 0)
  169   3              {
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 4   
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 4   
 
  170   4                memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step3_pressure,4);  //运行值=设�
              -��值
@@ -218,141 +218,139 @@ line level    source
  192   2      
  193   2            if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
  194   2            {
- 195   3              win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
- 196   3              win_str_data.state = FSM_STOP;
- 197   3            }
- 198   2            if(win_str_data.use_pressure <= 3)
- 199   2            {
- 200   3              if(win_str_data.real_pressure < (win_str_data.use_pressure))
- 201   3              {
- 202   4                win_str_data.state = FSM_START;
- 203   4              }
- 204   3            }
- 205   2            else
- 206   2            {
- 207   3              if(win_str_data.real_pressure < (win_str_data.use_pressure - 2))
- 208   3              {
- 209   4                win_str_data.state = FSM_START;
- 210   4              }
- 211   3            }
- 212   2            break;
- 213   2      
- 214   2          case FSM_STOP:
- 215   2            
- 216   2              win_str_data.sampling_time_tick = 0;
- 217   2              win_str_data.press_load_bar_num = 0;
- 218   2              sys_write_vp(ICON_PICK_UP_LOAD_BAR_ADDR,(u8 *)&win_str_data.sampling_time_tick,1);
- 219   2              win_str_data.out_start = 0;
- 220   2          
- 221   2              win_str_data.load_bar_tick = 0; // 进度条
- 222   2                win_str_data.press_load_bar_num = 0;
- 223   2          
- 224   2              sys_write_vp(ICON_TABLETTING_LOAD_BAR_ADDR,(u8 *)&win_str_data.press_load_bar_num,1);
- 225   2              memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step1_pressure,4);  //运行值=设�
+ 195   3              win_str_data.state = FSM_STOP;
+ 196   3            }
+ 197   2            if(win_str_data.use_pressure <= 3)
+ 198   2            {
+ 199   3              if(win_str_data.real_pressure < (win_str_data.use_pressure))
+ 200   3              {
+ 201   4                win_str_data.state = FSM_START;
+ 202   4              }
+ 203   3            }
+ 204   2            else
+ 205   2            {
+ 206   3              if(win_str_data.real_pressure < (win_str_data.use_pressure - 2))
+ 207   3              {
+ 208   4                win_str_data.state = FSM_START;
+ 209   4              }
+ 210   3            }
+ 211   2            break;
+ 212   2      
+ 213   2          case FSM_STOP:
+ 214   2            
+ 215   2              win_str_data.sampling_time_tick = 0;
+ 216   2              win_str_data.press_load_bar_num = 0;
+ 217   2              sys_write_vp(ICON_PICK_UP_LOAD_BAR_ADDR,(u8 *)&win_str_data.sampling_time_tick,1);
+ 218   2              win_str_data.out_start = 0;
+ 219   2          
+ 220   2              win_str_data.load_bar_tick = 0; // 进度条
+ 221   2                win_str_data.press_load_bar_num = 0;
+ 222   2          
+ 223   2              sys_write_vp(ICON_TABLETTING_LOAD_BAR_ADDR,(u8 *)&win_str_data.press_load_bar_num,1);
+ 224   2              memcpy((u8 *)&win_str_data.use_pressure,(u8 *)&win_str_data.prog_step1_pressure,4);  //运行值=设�
              -�值
- 226   2      
- 227   2              RTU_Cmd_Pending(RTU_DC1_OFF,OFF); //  液压机液压油泵
- 228   2              RTU_Cmd_Pending(RTU_AC_EX_OFF,OFF);// 下压电磁阀
- 229   2              RTU_Cmd_Pending(RTU_DC2_ON,ON); //  上升电磁阀开    
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 5   
+ 225   2      
+ 226   2              RTU_Cmd_Pending(RTU_DC1_OFF,OFF); //  液压机液压油泵
+ 227   2              RTU_Cmd_Pending(RTU_AC_EX_OFF,OFF);// 下压电磁阀
+ 228   2              RTU_Cmd_Pending(RTU_DC2_ON,ON); //  上升电磁阀开    
+ 229   2          
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 5   
 
- 230   2          
- 231   2              win_str_data.pressure_relief_time_minus = 0;
- 232   2          
- 233   2              win_str_data.load_bar = 10000/win_str_data.pressure_relief_time;
- 234   2      
- 235   2              win_str_data.used_time_l = win_str_data.used_time & 0xffff;  //Save used time
- 236   2              win_str_data.used_time_h = (win_str_data.used_time>>16) & 0xffff; 
- 237   2              norflash_write(RUNTIME_MIN_HADDR,(u8*)&win_str_data.used_time_h,2);
- 238   2            
- 239   2              win_str_data.state = FSM_END;
- 240   2            break;    
- 241   2              
- 242   2          case FSM_END:
- 243   2              if(win_str_data.pressure_relief_time_minus >= win_str_data.pressure_relief_time)
- 244   2              {
- 245   3                RTU_Cmd_Pending(RTU_DC2_OFF,OFF); //  上升电磁阀开    
- 246   3                RTU_Cmd_Pending(RTU_MOTOR_FLAG,2);  //  关闭
- 247   3                win_str_data.state = FSM_OPEN;
- 248   3                if(temp == 0xff) win_change_page(WORK_PAGE);
- 249   3              }
- 250   2              else
- 251   2              {
- 252   3                if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始�
+ 230   2              win_str_data.pressure_relief_time_minus = 0;
+ 231   2          
+ 232   2              win_str_data.load_bar = 10000/win_str_data.pressure_relief_time;
+ 233   2      
+ 234   2              win_str_data.used_time_l = win_str_data.used_time & 0xffff;  //Save used time
+ 235   2              win_str_data.used_time_h = (win_str_data.used_time>>16) & 0xffff; 
+ 236   2              norflash_write(RUNTIME_MIN_HADDR,(u8*)&win_str_data.used_time_h,2);
+ 237   2            
+ 238   2              win_str_data.state = FSM_END;
+ 239   2            break;    
+ 240   2              
+ 241   2          case FSM_END:
+ 242   2              if(win_str_data.pressure_relief_time_minus >= win_str_data.pressure_relief_time)
+ 243   2              {
+ 244   3                RTU_Cmd_Pending(RTU_DC2_OFF,OFF); //  上升电磁阀开    
+ 245   3                RTU_Cmd_Pending(RTU_MOTOR_FLAG,2);  //  关闭
+ 246   3                win_str_data.state = FSM_OPEN;
+ 247   3                if(temp == 0xff) win_change_page(WORK_PAGE);
+ 248   3              }
+ 249   2              else
+ 250   2              {
+ 251   3                if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始�
              -�号
- 253   3                {
- 254   4                  win_change_page(CYLINDER_RETURNING_PAGE);
- 255   4                  win_str_data.start = 0;
- 256   4                  win_str_data.out_start = 0;
- 257   4                  temp = 0xff;
- 258   4                }
- 259   3              }
- 260   2            break;
- 261   2      
- 262   2      
- 263   2          case FSM_OPEN:
- 264   2            if(str_sys.motor_sensor2 == 1)    //开到位
- 265   2            {
- 266   3              win_str_data.state = FSM_READY;
- 267   3            }
- 268   2            if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始信�
+ 252   3                {
+ 253   4                  win_str_data.start = 0;
+ 254   4                  win_str_data.out_start = 0;
+ 255   4                  temp = 0xff;
+ 256   4                }
+ 257   3              }
+ 258   2            break;
+ 259   2      
+ 260   2      
+ 261   2          case FSM_OPEN:
+ 262   2            if(str_sys.motor_sensor2 == 1)    //开到位
+ 263   2            {
+ 264   3              win_str_data.state = FSM_READY;
+ 265   3            }
+ 266   2            if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始信�
              -��
- 269   2            {
- 270   3              win_str_data.start = 0;
- 271   3              win_str_data.out_start = 0;
- 272   3              temp = 0xff;
- 273   3            }
- 274   2          default:
- 275   2            break;
- 276   2        }
- 277   1      }
- 278          void HFPeriod_1msTask(void)
- 279          {
- 280   1        win_str_data.real_pressure = ((str_sys.adc_per-350)/5);   //����ѹ��ֵ bar
- 281   1        if((int)win_str_data.real_pressure <= 0) win_str_data.real_pressure = 0;
- 282   1        
- 283   1        if(win_str_data.real_pressure > win_str_data.use_pressure) 
- 284   1          win_str_data.disp_real_pressure = win_str_data.use_pressure;
- 285   1        else
- 286   1          win_str_data.disp_real_pressure = win_str_data.real_pressure;
- 287   1          
- 288   1        sys_write_vp(ARTNUM_MAIN_REAL_PRESSURE_ADDR,(u8 *)&win_str_data.disp_real_pressure,1);
- 289   1      
-C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      06/04/2026 15:36:31 PAGE 6   
+ 267   2            {
+ 268   3              win_str_data.start = 0;
+ 269   3              win_str_data.out_start = 0;
+ 270   3              temp = 0xff;
+ 271   3            }
+ 272   2          default:
+ 273   2            break;
+ 274   2        }
+ 275   1      }
+ 276          void HFPeriod_1msTask(void)
+ 277          {
+ 278   1        win_str_data.real_pressure = ((str_sys.adc_per-350)/5);   //����ѹ��ֵ bar
+ 279   1        if((int)win_str_data.real_pressure <= 0) win_str_data.real_pressure = 0;
+ 280   1        
+ 281   1        if(win_str_data.real_pressure > win_str_data.use_pressure) 
+ 282   1          win_str_data.disp_real_pressure = win_str_data.use_pressure;
+ 283   1        else
+ 284   1          win_str_data.disp_real_pressure = win_str_data.real_pressure;
+ 285   1          
+ 286   1        sys_write_vp(ARTNUM_MAIN_REAL_PRESSURE_ADDR,(u8 *)&win_str_data.disp_real_pressure,1);
+ 287   1      
+ 288   1          
+ 289   1        btn_click_handler();//��ť����¼����� 
+C51 COMPILER V9.60.7.0   TASK_MANAGER                                                      09/18/2026 15:54:21 PAGE 6   
 
- 290   1          
- 291   1        btn_click_handler();//��ť����¼����� 
- 292   1        rtu_response_handler();
- 293   1        win_fresh_window();     //ˢ�½���
- 294   1      }
- 295          
- 296          
- 297          void Task_Manage_List_Init(void)
- 298          {
- 299   1        TasksPare[0].Task_Period=HFPeriod_COUNT; //PERIOD_COUNT=1    1ms
- 300   1        TasksPare[0].Task_Count=1;
- 301   1        TasksPare[0].Task_Function=HFPeriod_1msTask;  
- 302   1      
- 303   1        TasksPare[1].Task_Period=RTUPeriod_COUNT; //2ms
- 304   1        TasksPare[1].Task_Count=8;
- 305   1        TasksPare[1].Task_Function=RTU_send_Rece; //  ͨѶ���պͷ���;
- 306   1      
- 307   1        TasksPare[2].Task_Period=FSMPeriod_COUNT; //100ms
- 308   1        TasksPare[2].Task_Count=80;
- 309   1        TasksPare[2].Task_Function=Run_FSM;//  ͨѶ���պͷ���;
- 310   1      
- 311   1        TasksPare[3].Task_Period = TIMERPeriod_COUNT;//500ms
- 312   1        TasksPare[3].Task_Count=300;
- 313   1        TasksPare[3].Task_Function = Task_Timer_Sec;   // 500ms��LED����˸
- 314   1      }
- 315          
+ 290   1        rtu_response_handler();
+ 291   1        win_fresh_window();     //ˢ�½���
+ 292   1      }
+ 293          
+ 294          
+ 295          void Task_Manage_List_Init(void)
+ 296          {
+ 297   1        TasksPare[0].Task_Period=HFPeriod_COUNT; //PERIOD_COUNT=1    1ms
+ 298   1        TasksPare[0].Task_Count=1;
+ 299   1        TasksPare[0].Task_Function=HFPeriod_1msTask;  
+ 300   1      
+ 301   1        TasksPare[1].Task_Period=RTUPeriod_COUNT; //2ms
+ 302   1        TasksPare[1].Task_Count=8;
+ 303   1        TasksPare[1].Task_Function=RTU_send_Rece; //  ͨѶ���պͷ���;
+ 304   1      
+ 305   1        TasksPare[2].Task_Period=FSMPeriod_COUNT; //100ms
+ 306   1        TasksPare[2].Task_Count=80;
+ 307   1        TasksPare[2].Task_Function=Run_FSM;//  ͨѶ���պͷ���;
+ 308   1      
+ 309   1        TasksPare[3].Task_Period = TIMERPeriod_COUNT;//500ms
+ 310   1        TasksPare[3].Task_Count=300;
+ 311   1        TasksPare[3].Task_Function = Task_Timer_Sec;   // 500ms��LED����˸
+ 312   1      }
+ 313          
+ 314          
+ 315          // USER CODE END
  316          
- 317          // USER CODE END
- 318          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1988    ----
+   CODE SIZE        =   1967    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     32    ----
    PDATA SIZE       =   ----    ----

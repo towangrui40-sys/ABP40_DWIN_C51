@@ -121,15 +121,10 @@ u16 const page_reg[16]={						//???????
 	{6},//SYSTEM_PAGE
 	{7},//PASSCODE_PAGE
 	{8},//PASSCODE_CONFIRM_PAGE
-	{10},//WORK_PAGE
-	{11},//WORK_CONFIRM_PAGE
-	{12},//TABLETING_DONE_PAGE
-	{13},//DOOR_OPEN_PAGE
-	{15},//PROGRAM_PAGE
-	{16},//PROGRAM_CONFIRM_PAGE
-	{18},//PICKING_TABLETS_PAGE
-	{20},//CYLINDER_RETURNING_PAGE
-	{21},//INPUT_NUM_PAGE
+	{15},//WORK_PAGE
+	{16},//PROGRAM_PAGE
+	{17},//PROGRAM_CONFIRM_PAGE
+	{19},//PICKING_TABLETS_PAGE
 };
 
 void win_change_page(u16 page)    //?��????????
@@ -143,8 +138,6 @@ void win_change_page(u16 page)    //?��????????
 
 				sys_write_vp(ARTNUM_MAIN_PROG_NUM_ADDR,(u8*)&win_str_data.prog_grp,1);
 
-			break;
-		case WORK_CONFIRM_PAGE:
 			break;
 		case SYSTEM_PAGE:
 			break;
@@ -196,7 +189,6 @@ static void win_main_btn_click_handler(u16 btn_val)
 	#define  BTN_VAL_TEST        0X05 	 //test mode
 	#define  BTN_VAL_MENU        0X06    //
 	#define  BTN_VAL_SET         0X07    //settings into
-	#define  BTN_VAL_CONFIRM     0X08    //Confirm startup
 	#define  BTN_VAL_INFO        0X09
 	#define  BTN_VAL_BACK_MAIN   0X0A    //settings background
 	#define  BTN_VAL_BACK_MENU   0X0B    //settings background
@@ -207,18 +199,10 @@ static void win_main_btn_click_handler(u16 btn_val)
 	switch(btn_val)
 	{
 		case BTN_VAL_START:     //Page1:Push Start
-		 if(win_str_data.start == 0)
-				win_change_page(WORK_CONFIRM_PAGE);
+			 win_str_data.start = 1;
 			break;	
-		case BTN_VAL_CONFIRM://Page13:********************  ???????????????
-			win_str_data.start = 1;
-			win_change_page(WORK_PAGE);
-			break;
-		case BTN_VAL_STOP:     //Page1:push Stop************************
-			if(win_str_data.start != 0)
-			{
-				win_str_data.start = 0;
-			}
+		case BTN_VAL_STOP:     //Page1:push Stop
+			 win_str_data.start = 0;
 			break;			 
 		case BTN_VAL_MENU:
 			if(win_str_data.start != 0)break;
@@ -724,30 +708,6 @@ static void win_fac_set_btn_click_handler(u16 btn_val)
 			{
 				sys_write_vp(STRING_PRODUCT_ADDR,(u8*)product_data[win_str_data.product_id].name,sizeof(product_data[win_str_data.product_id].name));
 			}				
-			break;
-		case BTN_PRESSURE_RELIEF_TIME:
-			win_str_data.factory_sel = BTN_PRESSURE_RELIEF_TIME;
-			win_str_data.sys_input_num = win_str_data.pressure_relief_time;
-			sys_write_vp(ARTNUM_INPUTNUM_ADDR,(u8 *)&win_str_data.sys_input_num,1);
-			win_change_page(INPUT_NUM_PAGE);
-			break;
-		case BTN_SAMPLING_TIME:
-			win_str_data.factory_sel = BTN_SAMPLING_TIME;
-			win_str_data.sys_input_num = win_str_data.sampling_time;
-			sys_write_vp(ARTNUM_INPUTNUM_ADDR,(u8 *)&win_str_data.sys_input_num,1);
-			win_change_page(INPUT_NUM_PAGE);
-			break;
-		case BTN_MOLD_PRESSING1:
-			win_str_data.factory_sel = BTN_MOLD_PRESSING1;
-			win_str_data.sys_input_num = win_str_data.mold_pressing1;
-			sys_write_vp(ARTNUM_INPUTNUM_ADDR,(u8 *)&win_str_data.sys_input_num,1);
-			win_change_page(INPUT_NUM_PAGE);
-			break;
-		case BTN_MOLD_PRESSING2:
-			win_str_data.factory_sel = BTN_MOLD_PRESSING2;
-			win_str_data.sys_input_num = win_str_data.mold_pressing2;
-			sys_write_vp(ARTNUM_INPUTNUM_ADDR,(u8 *)&win_str_data.sys_input_num,1);
-			win_change_page(INPUT_NUM_PAGE);
 			break;
 		
 		default:break;

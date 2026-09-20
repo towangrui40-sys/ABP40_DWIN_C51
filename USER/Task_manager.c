@@ -144,7 +144,7 @@ void Run_FSM(void)   //FSM状态机
 				}
 				if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
 				{
-					win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
+
 					win_str_data.state = FSM_STOP;
 				}
 				break;
@@ -192,7 +192,6 @@ void Run_FSM(void)   //FSM状态机
 
 			if(win_str_data.start == 0) //start = 0停止信号 start = 1 运行信号
 			{
-				win_change_page(TABLETING_DONE_PAGE);  //压片完成弹窗
 				win_str_data.state = FSM_STOP;
 			}
 			if(win_str_data.use_pressure <= 3)
@@ -251,7 +250,6 @@ void Run_FSM(void)   //FSM状态机
 				{
 					if(win_str_data.start == 1 || (win_str_data.out_start == 1))    //接收到Start_win  start=1开始信号
 					{
-						win_change_page(CYLINDER_RETURNING_PAGE);
 						win_str_data.start = 0;
 						win_str_data.out_start = 0;
 						temp = 0xff;
