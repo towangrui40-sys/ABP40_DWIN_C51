@@ -113,7 +113,7 @@ void btn_hold_callback(u16 addr,u16 val)
 }
 
 
-u16 const page_reg[16]={						//???????
+u16 const page_reg[16]={
 	{1},//MENU_PAGE
 	{2},//FAC_PAGE
 	{3},//INFO_PAGE
@@ -121,13 +121,15 @@ u16 const page_reg[16]={						//???????
 	{6},//SYSTEM_PAGE
 	{7},//PASSCODE_PAGE
 	{8},//PASSCODE_CONFIRM_PAGE
+	{10},//MANUAL_PAGE
+	{11},//ALARM_PAGE
 	{15},//WORK_PAGE
 	{16},//PROGRAM_PAGE
 	{17},//PROGRAM_CONFIRM_PAGE
 	{19},//PICKING_TABLETS_PAGE
 };
 
-void win_change_page(u16 page)    //?��????????
+void win_change_page(u16 page)
 {
 	u16 xdata temp;
 	temp = page_reg[page];
@@ -182,68 +184,45 @@ static void win_clear_input_icon(void)
 //?????????ˮ????????
 static void win_main_btn_click_handler(u16 btn_val)
 {
-	#define  BTN_VAL_START	     0X01    //start
-	#define  BTN_VAL_PAUSE    	 0X02    //pause
-	#define  BTN_VAL_STOP        0X03    //stop 
+    #define  BTN_VAL_START        0X01    //启动
+    #define  BTN_VAL_STOP         0X02    //停止
+	#define  BTN_VAL_MENU         0X03    
+    #define  BTN_VAL_INFO         0X04    //信息
+    #define  BTN_VAL_ALARM        0X05    //报警
+    #define  BTN_VAL_MANUAL       0X06    //手动操作
+	#define  BTN_VAL_RETURN_MENU   0X07
+    #define  BTN_VAL_RETURN_MAIN   0X08
 
-	#define  BTN_VAL_TEST        0X05 	 //test mode
-	#define  BTN_VAL_MENU        0X06    //
-	#define  BTN_VAL_SET         0X07    //settings into
-	#define  BTN_VAL_INFO        0X09
-	#define  BTN_VAL_BACK_MAIN   0X0A    //settings background
-	#define  BTN_VAL_BACK_MENU   0X0B    //settings background
-	#define  BTN_VAL_RESET       0X0C
-	#define  BTN_VAL_TAKE_OUT         0X0D    //
-	#define  BTN_VAL_TAKE_OUT_STOP    0X0E
-	u16 xdata temp = 0;
-	switch(btn_val)
-	{
-		case BTN_VAL_START:     //Page1:Push Start
-			 win_str_data.start = 1;
-			break;	
-		case BTN_VAL_STOP:     //Page1:push Stop
-			 win_str_data.start = 0;
-			break;			 
-		case BTN_VAL_MENU:
-			if(win_str_data.start != 0)break;
-			win_change_page(MENU_PAGE);		
-			break;		 
-		case BTN_VAL_SET:         //Page1:Setting*****************************
-			if(win_str_data.start != 0) break;  
-			Fresh_Service_Time();
-			win_change_page(SYSTEM_PAGE);
-			break;
-		case BTN_VAL_BACK_MAIN:
-			win_change_page(WORK_PAGE);
-			break;
-
-		case BTN_VAL_BACK_MENU:
-			win_change_page(MENU_PAGE);
-			break;
-		case BTN_VAL_INFO:
-			if(win_str_data.logo == 4) //no logo
-				win_change_page(INFO_NO_LOGO_PAGE);
-			else
-				win_change_page(INFO_PAGE);
-			break;
-		case BTN_VAL_RESET:    //运行时间复位输入密码界面
-				win_change_page(PASSCODE_PAGE);
-			break;
-		
-		case BTN_VAL_TAKE_OUT:   //取片开始
-			if(win_str_data.start == 0)
-			 {
-				 win_change_page(PICKING_TABLETS_PAGE);
-				 win_str_data.out_start = 1;
-			 }
-			break;
-		case BTN_VAL_TAKE_OUT_STOP:  //取片停止
-			if(win_str_data.out_start != 0) 
-				win_str_data.out_start = 0;	
-		    break;
-	}
+    switch(btn_val)
+    {
+        case BTN_VAL_START:
+            win_str_data.start = 1;
+            break;
+        case BTN_VAL_STOP:
+            win_str_data.start = 0;
+            break;
+        case BTN_VAL_INFO:
+            if(win_str_data.logo == 4)
+                win_change_page(INFO_NO_LOGO_PAGE);
+            else
+                win_change_page(INFO_PAGE);
+            break;
+        case BTN_VAL_ALARM:
+			win_change_page(INFO_PAGE);
+            break;
+        case BTN_VAL_MANUAL:
+			win_change_page(MANUAL_PAGE);
+            break;
+        case BTN_VAL_RETURN_MENU:
+            win_change_page(MENU_PAGE);
+            break;
+        case BTN_VAL_RETURN_MAIN:
+            win_change_page(WORK_PAGE);
+            break;
+        default:
+            break;
+    }
 }
-
 
 #define  BTN_VAL_NO	   		0X1C00
 #define  BTN_VAL_YES	   	0X1400
